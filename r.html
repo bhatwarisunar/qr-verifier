@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verifying QR…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (id) {
+      window.location.replace(
+        "https://script.google.com/macros/s/AKfycbyiqAxxU-XMpLq8sbogmK7mbN5BrQrOfVVhKxtN7JRd0lD-XUL4nwx0-ziVVGHB_WuTSQ/exec?id=" + id
+      );
+    } else {
+      document.body.innerHTML = "<h2>Invalid QR</h2>";
+    }
+  </script>
+</head>
+<body>
+  <p>Checking QR…</p>
+</body>
+</html>
