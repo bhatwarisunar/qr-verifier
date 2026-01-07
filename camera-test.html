@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Camera Test</h2>
+<video autoplay playsinline></video>
+
+<script>
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+  .then(stream => {
+    document.querySelector("video").srcObject = stream;
+  })
+  .catch(err => {
+    document.body.innerHTML += "<p>ERROR: " + err.message + "</p>";
+  });
+</script>
+</body>
+</html>
