@@ -5,8 +5,8 @@
   <title>QR Verifier</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- QR library -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.10"></script>
+  <!-- Stable QR library -->
+  <script src="https://unpkg.com/html5-qrcode@2.2.1"></script>
 
   <style>
     body {
@@ -21,10 +21,8 @@
     }
     #reader {
       width: 100%;
-      max-width: 380px;
+      max-width: 360px;
       margin: auto;
-      border-radius: 12px;
-      overflow: hidden;
     }
     .hint {
       color: #444;
@@ -34,21 +32,6 @@
     .status {
       margin-top: 8px;
       font-weight: bold;
-    }
-    .frame {
-      position: absolute;
-      border: 3px solid #0a8754;
-      border-radius: 12px;
-      pointer-events: none;
-    }
-    .flash {
-      margin-top: 10px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      background: #0a8754;
-      color: white;
-      font-size: 14px;
     }
   </style>
 </head>
@@ -60,74 +43,48 @@
 <div id="reader"></div>
 
 <div class="hint">
-  Hold phone steady • Keep QR inside frame • Good lighting
+  Hold phone steady • Keep QR inside box
 </div>
 
 <div class="status" id="status"></div>
 
-<button class="flash" id="flashBtn" style="display:none">
-  🔦 Turn Flash ON
-</button>
-
 <script>
-  let scanning = true;
-  let torchOn = false;
-
   const statusEl = document.getElementById("status");
-  const flashBtn = document.getElementById("flashBtn");
 
   function onScanSuccess(decodedText) {
-    if (!scanning) return;
-    scanning = false;
-
     statusEl.innerText = "Checking…";
+    // decodedText already contains redirect URL
     window.location.href = decodedText;
   }
 
-  function onScanFailure() {
-    // silent – improves performance
+  function onScanFailure(error) {
+    // ignore scan failures for performance
   }
 
-  const html5QrCode = new Html5Qrcode("reader");
-
+  // IMPORTANT: simple, stable start
   Html5Qrcode.getCameras().then(cameras => {
     if (!cameras || cameras.length === 0) {
       statusEl.innerText = "No camera found";
       return;
     }
 
-    html5QrCode.start(
-      { deviceId: { exact: cameras[cameras.length - 1].id } }, // rear camera
+    const cameraId = cameras[cameras.length - 1].id; // rear camera
+
+    const qr = new Html5Qrcode("reader");
+
+    qr.start(
+      cameraId,
       {
-        fps: 20,                 // higher = faster detection
-        qrbox: { width: 280, height: 280 }, // larger box
-        aspectRatio: 1.0,
-        disableFlip: true,
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
-        }
+        fps: 15,
+        qrbox: 280,
+        disableFlip: true
       },
       onScanSuccess,
       onScanFailure
-    ).then(() => {
-      statusEl.innerText = "Scanning…";
-
-      // Torch support (if available)
-      html5QrCode.getRunningTrackSettings().then(settings => {
-        if (settings && "torch" in settings) {
-          flashBtn.style.display = "inline-block";
-        }
-      });
-    });
+    );
+  }).catch(err => {
+    statusEl.innerText = "Camera error: " + err;
   });
-
-  flashBtn.onclick = async () => {
-    torchOn = !torchOn;
-    await html5QrCode.applyVideoConstraints({
-      advanced: [{ torch: torchOn }]
-    });
-    flashBtn.innerText = torchOn ? "🔦 Turn Flash OFF" : "🔦 Turn Flash ON";
-  };
 </script>
 
 </body>
