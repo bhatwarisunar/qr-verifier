@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QR Verifier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    #reader { width: 300px; margin: auto; }
+    .hint { color: #555; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>QR Verifier</h2>
+<div id="reader"></div>
+<div class="hint">Point camera at QR</div>
+
+<script>
+  function onScanSuccess(decodedText) {
+    window.location.href = decodedText;
+  }
+
+  new Html5Qrcode("reader").start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    onScanSuccess
+  );
+</script>
+
+</body>
+</html>
