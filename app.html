@@ -4,87 +4,53 @@
   <meta charset="utf-8">
   <title>QR Verifier</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Stable QR library -->
-  <script src="https://unpkg.com/html5-qrcode@2.2.1"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 10px;
-    }
-    h2 {
-      margin-top: 10px;
-    }
-    #reader {
-      width: 100%;
-      max-width: 360px;
-      margin: auto;
-    }
-    .hint {
-      color: #444;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    .status {
-      margin-top: 8px;
-      font-weight: bold;
-    }
+    body { text-align:center; font-family:Arial; background:#f5f7fa; }
+    video { width:100%; max-width:380px; border-radius:12px; }
+    .status { margin-top:10px; font-weight:bold; }
   </style>
 </head>
-
 <body>
 
 <h2>QR Verifier</h2>
-
-<div id="reader"></div>
-
-<div class="hint">
-  Hold phone steady • Keep QR inside box
-</div>
-
-<div class="status" id="status"></div>
+<video id="video" autoplay playsinline></video>
+<div class="status" id="status">Scanning…</div>
 
 <script>
-  const statusEl = document.getElementById("status");
+const statusEl = document.getElementById("status");
+const video = document.getElementById("video");
 
-  function onScanSuccess(decodedText) {
-    statusEl.innerText = "Checking…";
-    // decodedText already contains redirect URL
-    window.location.href = decodedText;
-  }
+// Prefer native BarcodeDetector if available
+if ("BarcodeDetector" in window) {
+  const detector = new BarcodeDetector({ formats: ["qr_code"] });
 
-  function onScanFailure(error) {
-    // ignore scan failures for performance
-  }
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  }).then(stream => {
+    video.srcObject = stream;
 
-  // IMPORTANT: simple, stable start
-  Html5Qrcode.getCameras().then(cameras => {
-    if (!cameras || cameras.length === 0) {
-      statusEl.innerText = "No camera found";
-      return;
-    }
-
-    const cameraId = cameras[cameras.length - 1].id; // rear camera
-
-    const qr = new Html5Qrcode("reader");
-
-    qr.start(
-      cameraId,
-      {
-        fps: 15,
-        qrbox: 280,
-        disableFlip: true
-      },
-      onScanSuccess,
-      onScanFailure
-    );
-  }).catch(err => {
-    statusEl.innerText = "Camera error: " + err;
+    const scan = async () => {
+      try {
+        const barcodes = await detector.detect(video);
+        if (barcodes.length) {
+          window.location.href = barcodes[0].rawValue;
+          return;
+        }
+      } catch {}
+      requestAnimationFrame(scan);
+    };
+    scan();
   });
+} else {
+  // ZXing fallback
+  const reader = new ZXing.BrowserQRCodeReader();
+  reader.decodeFromVideoDevice(null, video, (result, err) => {
+    if (result) {
+      window.location.href = result.text;
+    }
+  });
+}
 </script>
 
 </body>
