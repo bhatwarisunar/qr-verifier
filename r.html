@@ -2,22 +2,61 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Verifying QR…</title>
+  <title>Verify QR</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
 
-    if (id) {
-      window.location.replace(
-        "https://script.google.com/macros/s/AKfycbyiqAxxU-XMpLq8sbogmK7mbN5BrQrOfVVhKxtN7JRd0lD-XUL4nwx0-ziVVGHB_WuTSQ/exec?id=" + id
-      );
-    } else {
-      document.body.innerHTML = "<h2>Invalid QR</h2>";
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
     }
-  </script>
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 14px 20px;
+      font-size: 16px;
+      background: #0a8754;
+      color: white;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+  </style>
 </head>
+
 <body>
-  <p>Checking QR…</p>
+
+<div class="card">
+  <h2>QR Detected</h2>
+  <p>Tap below to verify</p>
+
+  <a id="verifyBtn" class="btn">VERIFY</a>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) {
+    document.body.innerHTML = "<h2>Invalid QR</h2>";
+  } else {
+    const verifyUrl =
+      "https://script.google.com/macros/s/AKfycbyiqAxxU-XMpLq8sbogmK7mbN5BrQrOfVVhKxtN7JRd0lD-XUL4nwx0-ziVVGHB_WuTSQ/exec?id=" +
+      encodeURIComponent(id);
+
+    document.getElementById("verifyBtn").href = verifyUrl;
+  }
+</script>
+
 </body>
 </html>
